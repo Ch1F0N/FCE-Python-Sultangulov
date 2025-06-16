@@ -23,7 +23,7 @@ class Node:
 
 
 class LinkedQueue:
-    """Очередь FIFO на односвязном списке с минимальным API."""
+    """Очередь FIFO на односвязном списке."""
 
     __slots__ = ("head", "tail")
 
@@ -60,9 +60,8 @@ class LinkedQueue:
 class UglyNumberGenerator:
     """Генератор ugly-чисел (делители ≤ 5)."""
 
-    @staticmethod
-    def _min3(a, b, c):
-        """Минимум из трёх чисел без использования builtin min()."""
+    def min3(self, a, b, c):
+        """Минимум из трёх чисел без builtin min()."""
         m = a
         if b < m:
             m = b
@@ -70,11 +69,10 @@ class UglyNumberGenerator:
             m = c
         return m
 
-    @staticmethod
-    def generate(n):
-        """Вернуть список из первых n ugly-чисел."""
+    def generate(self, n):
+        """Вернуть список из первых n ugly-чисел (n > 0)."""
         if n <= 0:
-            raise ValueError("n должно быть положительным целым числом")
+            print("n должно быть положительным целым числом")
 
         result = []
         produced = 0
@@ -88,7 +86,7 @@ class UglyNumberGenerator:
             a = q2.peek()
             b = q3.peek()
             c = q5.peek()
-            x = UglyNumberGenerator._min3(a, b, c)
+            x = self._min3(a, b, c)
 
             if q2.peek() == x:
                 q2.dequeue()
@@ -144,9 +142,7 @@ def main():
             groups[5].append(num)
 
     print(f"Первые {n} чисел с простыми множителями только 2, 3, 5:")
-    for num in nums:
-        print(num, end=" ")
-    print()
+    print(*nums)
 
     print("\nРазбиение по включённым простым множителям:")
     for p in (2, 3, 5):
