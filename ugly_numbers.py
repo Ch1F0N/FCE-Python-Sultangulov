@@ -60,7 +60,7 @@ class LinkedQueue:
 class UglyNumberGenerator:
     """Генератор ugly-чисел (делители ≤ 5)."""
 
-    def min3(self, a, b, c):
+    def _min3(self, a, b, c):
         """Минимум из трёх чисел без builtin min()."""
         m = a
         if b < m:
