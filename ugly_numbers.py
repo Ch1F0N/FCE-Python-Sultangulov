@@ -15,13 +15,17 @@
 class Node:
     """Узел односвязного списка."""
 
+    __slots__ = ("data", "next")
+
     def __init__(self, data):
         self.data = data
         self.next = None
 
 
 class LinkedQueue:
-    """Минимальная очередь FIFO на односвязном списке."""
+    """Очередь FIFO на односвязном списке с минимальным API."""
+
+    __slots__ = ("head", "tail")
 
     def __init__(self):
         self.head = None
@@ -32,7 +36,7 @@ class LinkedQueue:
 
     def enqueue(self, item):
         new_node = Node(item)
-        if self.tail:
+        if self.tail is not None:
             self.tail.next = new_node
         else:
             self.head = new_node
@@ -40,7 +44,7 @@ class LinkedQueue:
 
     def dequeue(self):
         if self.head is None:
-            print("Двухсторонняя очередь из пустой очереди!")
+            print("Очередь пуста")
         data = self.head.data
         self.head = self.head.next
         if self.head is None:
@@ -49,66 +53,67 @@ class LinkedQueue:
 
     def peek(self):
         if self.head is None:
-            print("Выбор из пустой очереди!")
+            print("Очередь пуста")
         return self.head.data
 
 
 class UglyNumberGenerator:
-    """Генерирует первые n чисел, чьи множители — только 2, 3, 5."""
+    """Генератор ugly-чисел (делители ≤ 5)."""
 
-    def generate(self, n):
-        if n < 0:
-            print("n должна быть >= 1")
+    @staticmethod
+    def _min3(a, b, c):
+        """Минимум из трёх чисел без использования builtin min()."""
+        m = a
+        if b < m:
+            m = b
+        if c < m:
+            m = c
+        return m
+
+    @staticmethod
+    def generate(n):
+        """Вернуть список из первых n ugly-чисел."""
+        if n <= 0:
+            raise ValueError("n должно быть положительным целым числом")
 
         result = []
+        produced = 0
 
-        x2, x3, x5 = LinkedQueue(), LinkedQueue(), LinkedQueue()
-        x2.enqueue(2)
-        x3.enqueue(3)
-        x5.enqueue(5)
+        q2, q3, q5 = LinkedQueue(), LinkedQueue(), LinkedQueue()
+        q2.enqueue(2)
+        q3.enqueue(3)
+        q5.enqueue(5)
 
-        while len(result) < n:
-            a, b, c = x2.peek(), x3.peek(), x5.peek()
+        while produced < n:
+            a = q2.peek()
+            b = q3.peek()
+            c = q5.peek()
+            x = UglyNumberGenerator._min3(a, b, c)
 
-            if a <= b and a <= c:
-                x = x2.dequeue()
-            elif b <= a and b <= c:
-                x = x3.dequeue()
-            else:
-                x = x5.dequeue()
-
-            if not x2.is_empty() and x2.peek() == x:
-                x2.dequeue()
-            if not x3.is_empty() and x3.peek() == x:
-                x3.dequeue()
-            if not x5.is_empty() and x5.peek() == x:
-                x5.dequeue()
+            if q2.peek() == x:
+                q2.dequeue()
+            if q3.peek() == x:
+                q3.dequeue()
+            if q5.peek() == x:
+                q5.dequeue()
 
             result.append(x)
+            produced += 1
 
-            x2.enqueue(x * 2)
-            x3.enqueue(x * 3)
-            x5.enqueue(x * 5)
+            q2.enqueue(x * 2)
+            q3.enqueue(x * 3)
+            q5.enqueue(x * 5)
 
         return result
 
 
-def factorize(number):
-    """Определяет, входит ли в число простое 2,3,5 и в какой степени."""
-    exps = {2: 0, 3: 0, 5: 0}
-    for p in (2, 3, 5):
-        while number % p == 0:
-            exps[p] += 1
-            number //= p
-    return exps
-
-
 def main():
-    """Запрашивает n и выводит группы чисел по множителям."""
+    """Простейший CLI."""
     gen = UglyNumberGenerator()
+
     while True:
         try:
-            raw = input("Введите положительное целое число n (0 для выхода): ")
+            raw = input("Введите n (0 — выход): ")
             n = int(raw)
             if n == 0:
                 print("Выход.")
@@ -119,7 +124,7 @@ def main():
             break
         except ValueError:
             print("Ошибка: введите целое число.")
-        except KeyboardInterrupt:
+        except (KeyboardInterrupt, EOFError):
             print("\nВыход.")
             return
 
@@ -131,26 +136,24 @@ def main():
 
     groups = {2: [], 3: [], 5: []}
     for num in nums:
-        exp = factorize(num)
-        for p in (2, 3, 5):
-            if exp[p] > 0:
-                groups[p].append(num)
+        if num % 2 == 0:
+            groups[2].append(num)
+        if num % 3 == 0:
+            groups[3].append(num)
+        if num % 5 == 0:
+            groups[5].append(num)
 
-    if groups[2]:
-        print("Числа, в которые входят при разложении на множители цифра 2:")
-        for x in groups[2]:
-            print(x, end=" ")
-        print()
-    if groups[3]:
-        print("Числа, в которые входят при разложении на множители цифра 3:")
-        for x in groups[3]:
-            print(x, end=" ")
-        print()
-    if groups[5]:
-        print("Числа, в которые входят при разложении на множители цифра 5:")
-        for x in groups[5]:
-            print(x, end=" ")
-        print()
+    print(f"Первые {n} чисел с простыми множителями только 2, 3, 5:")
+    for num in nums:
+        print(num, end=" ")
+    print()
+
+    print("\nРазбиение по включённым простым множителям:")
+    for p in (2, 3, 5):
+        if groups[p]:
+            print(f"\nЧисла, делящиеся на {p}:")
+            print(*groups[p])
+
 
 if __name__ == "__main__":
     main()
